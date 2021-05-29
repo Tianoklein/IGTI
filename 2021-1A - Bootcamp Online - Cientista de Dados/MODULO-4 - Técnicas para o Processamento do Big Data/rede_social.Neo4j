@@ -1,0 +1,56 @@
+### NOS DO TIPO: USUÁRIO
+
+CREATE CONSTRAINT ON (usuario:USUARIO) ASSERT usuario.email IS UNIQUE
+CREATE (tulio:USUARIO {nome: "Tulio", email:"tulio@example.com"}) 
+RETURN tulio 
+
+
+### NÓS DO TIPO: POST
+
+MATCH (tulio:USUÁRIO {email:"tulio@example.com"})
+CREATE(tulio)<-[r:CRIADO_POR]-(post:POST{titulo: "Primeiro post",conteudo:"Eu amo o Neo4j"}) 
+RETURN tulio, r, post
+
+
+### NÓS DO TIPO: SEGUIR
+MATCH (tulio:USUÁRIO {email:"tulio@example.com"}), (pele:USUARIO{email:"pele@example.com"})
+CREATE (pele)-[r:FOLLOW]->(tulio)
+RETURN tulio, r, pele
+
+
+### NÓS DO TIPO: CURTIR
+MATCH (tulio:USUARIO {email:"tulio@example.com"}), (p:POST{titulo: "Ele é o melhor"})
+CREATE (tulio)-[r:CURTIU]->(p)
+RETURN tulio, p.conteudo
+
+MATCH(tulio:USUARIO {email:"tulio@example.com"}),(p:POST) WHERE ID(p)=60
+CREATE(tulio)-[r:CURTIU]->(p)
+RETURN tulio, p, conteudo 
+
+######################################################
+### CONSULTAR O INDENTIFICADOR UNICO PARA CADA NÓ:
+MATCH (p:POST) RETURN p.titulo, ID(p)
+
+#### CONSULTAR TODOS OS USUÁRIOS
+MATCH (u:USUARIO)
+RETURN u{.name, .email}
+
+### OBTER O USUARIO E OS POSTS RELACIONADOS:
+MATCH (u:USUARIO{email:"tulio@example.com"})<-[:CRIADO_POR]-(p:POST)
+RETURN u{.nome, .email, posts: collect(p.titulo)}
+
+### RECOMENDAR POSTS PARA UM USUARIO:
+MATCH (u:USUARIO{email:"pele@example"})-[:FOLLOWS]->(:USUARIO) - -(p:POST) 
+RETURN p{id:ID(p), .titulo, .conteudo}
+
+
+## RETORNAR O NOME DO USUARIO:
+MATCH (u:USUARIO{email:"pele@example"})-[:FOLLOWS]-> (uf:USUARIO)
+RETURN uf.nome
+
+MATCH (u:USUARIO {email:"tulio@example.com"})-[:FOLLOWS]->(uf:USUARIO)
+RETURN uf.nome
+
+
+###############################################################################
+
